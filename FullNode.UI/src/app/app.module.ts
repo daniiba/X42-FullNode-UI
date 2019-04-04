@@ -9,6 +9,7 @@ import { LoginComponent } from './login/login.component';
 import { SetupModule } from './setup/setup.module';
 import { WalletModule } from './wallet/wallet.module';
 
+
 @NgModule({
   imports: [
     BrowserModule,
@@ -16,7 +17,7 @@ import { WalletModule } from './wallet/wallet.module';
     SharedModule,
     SetupModule,
     WalletModule,
-    AppRoutingModule
+    AppRoutingModule,    
   ],
   declarations: [
     AppComponent,

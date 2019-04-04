@@ -22,6 +22,12 @@ import { SendConfirmationComponent } from './send/send-confirmation/send-confirm
 import { TransactionDetailsComponent } from './transaction-details/transaction-details.component';
 import { LogoutConfirmationComponent } from './logout-confirmation/logout-confirmation.component';
 import { BsDatepickerModule } from 'ngx-bootstrap';
+import { AnalyticsComponent } from './analytics/analytics.component';
+import { ChartsModule } from 'ng2-charts';
+import { BarChartComponent } from './analytics/charts/bar-chart/bar-chart.component';
+import { DoughnutChartComponent } from './analytics/charts/doughnut-chart/doughnut-chart.component';
+import { RadarChartComponent } from './analytics/charts/radar-chart/radar-chart.component';
+import { PieChartComponent } from './analytics/charts/pie-chart/pie-chart.component';
 
 @NgModule({
   imports: [
@@ -29,7 +35,8 @@ import { BsDatepickerModule } from 'ngx-bootstrap';
     WalletRoutingModule,
     ColdStakingModule,
     SmartContractsModule,
-    BsDatepickerModule.forRoot()
+    BsDatepickerModule.forRoot(),
+    ChartsModule
   ],
   declarations: [
     WalletComponent,
@@ -48,7 +55,12 @@ import { BsDatepickerModule } from 'ngx-bootstrap';
     ExtPubkeyComponent,
     AboutComponent,
     GenerateAddressesComponent,
-    ResyncComponent
+    ResyncComponent,
+    AnalyticsComponent,
+    BarChartComponent,
+    DoughnutChartComponent,
+    RadarChartComponent,
+    PieChartComponent
   ],
   entryComponents: [
     SendComponent,
