@@ -24,14 +24,16 @@ import { LogoutConfirmationComponent } from './logout-confirmation/logout-confir
 import { BsDatepickerModule } from 'ngx-bootstrap';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { ChartsModule } from 'ng2-charts';
-import { BarChartComponent } from './analytics/charts/bar-chart/bar-chart.component';
+import { LineChartComponent } from './analytics/charts/line-chart/line-chart.component';
 import { DoughnutChartComponent } from './analytics/charts/doughnut-chart/doughnut-chart.component';
 import { RadarChartComponent } from './analytics/charts/radar-chart/radar-chart.component';
 import { PieChartComponent } from './analytics/charts/pie-chart/pie-chart.component';
+import {ChartModule} from 'primeng/chart';
 
 @NgModule({
   imports: [
     SharedModule,
+    ChartModule,
     WalletRoutingModule,
     ColdStakingModule,
     SmartContractsModule,
@@ -57,7 +59,7 @@ import { PieChartComponent } from './analytics/charts/pie-chart/pie-chart.compon
     GenerateAddressesComponent,
     ResyncComponent,
     AnalyticsComponent,
-    BarChartComponent,
+    LineChartComponent,
     DoughnutChartComponent,
     RadarChartComponent,
     PieChartComponent

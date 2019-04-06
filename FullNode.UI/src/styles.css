@@ -4294,6 +4294,9 @@ tbody.collapse.show {
   background-clip: border-box;
   border: 1px solid #fff;
 }
+.noborder{
+  border: none;
+}
 
   .card > hr {
     margin-right: 0;

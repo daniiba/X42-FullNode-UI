@@ -75,7 +75,6 @@ export class HistoryComponent {
 
   private getTransactionInfo(transactions: any) {
     this.transactions = [];
-
     for (let transaction of transactions) {
       let transactionType;
       if (transaction.type === "send") {
