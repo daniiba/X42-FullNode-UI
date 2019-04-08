@@ -11,7 +11,7 @@ import { Subscription, from } from 'rxjs';
 import { TransactionDetailsComponent } from '../../../transaction-details/transaction-details.component';
 import { Color, BaseChartDirective, Label } from 'ng2-charts';
 import { fillProperties } from '@angular/core/src/util/property';
-
+var moment = require('moment');
 @Component({
   selector: 'app-line-chart',
   templateUrl: './line-chart.component.html',
@@ -34,7 +34,7 @@ export class LineChartComponent  implements OnInit {
   
       {
           label: 'Stakes',
-          data: [ ],
+          data: [],
           borderColor: "#8dc8b7",
           backgroundColor: "rgba(141, 200, 183, 0.6)",
           pointBackgroundColor: "#8dc8b7",
@@ -130,8 +130,18 @@ export class LineChartComponent  implements OnInit {
         response => {
           //TO DO - add account feature instead of using first entry in array
           if (!!response.history && response.history[0].transactionsHistory.length > 0) {
-            historyResponse = response.history[0].transactionsHistory;
-            this.getTransactionInfo(historyResponse);
+            //Checking if there was a new Transaction, if not don't call getTransactionInfo
+            if(historyResponse!=undefined) {
+              if(historyResponse[0].id!=response.history[0].transactionsHistory[0].id &&historyResponse[0].type!=response.history[0].transactionsHistory[0].type) {
+                historyResponse = response.history[0].transactionsHistory;   
+                this.getTransactionInfo(historyResponse);
+              }
+            } else {
+              historyResponse = response.history[0].transactionsHistory;   
+              this.getTransactionInfo(historyResponse);
+            }
+          
+           
           }
         },
         error => {
@@ -149,10 +159,11 @@ export class LineChartComponent  implements OnInit {
   };
 
   private getTransactionInfo(transactions: any) {
+  
     this.transactions = [];
-    let stakes = [{}];
-    let outgoing =[{}];
-    let received =[{}];
+    let stakes =[];
+    let outgoing =[];
+    let received=[];
     let balance=0;
     for (let transaction of transactions) {
       
@@ -188,10 +199,9 @@ export class LineChartComponent  implements OnInit {
       }
       this.transactions.push(new TransactionInfo(transactionType, transactionId, transactionAmount, transactionFee, transactionConfirmedInBlock, transactionTimestamp));
     }
-    
-      this.addData("outgoing", balance, outgoing)
-      this.addData("received", balance, received)
-      this.addData("stake", balance, stakes)
+      console.log(outgoing, received, stakes)
+      this.addData(balance, outgoing, received, stakes)
+     
     
    
   }
@@ -205,120 +215,153 @@ export class LineChartComponent  implements OnInit {
   private startSubscriptions() {
     this.getHistory();
   }
-  public addData(type, balance, transaction){
 
-    if(type==="stake") {
-    
-    let finalData; 
-      for(let t of transaction) {
+
+  public addData( balance, outgoing, received, stakes){
+   
+      let outgoingData;
+      let receivedData;
+      let stakesData;
+      for(let t of outgoing) {
         if(t.amount!=undefined && t.time!=undefined){
           let date= new Date(t.time*1000);
           let convertedDate = String(date.getFullYear()+"-"+Number(date.getMonth()+1)+"-"+date.getDate())
           let amount = t.amount/100000000
-          if(finalData!=undefined) {
+          if(outgoingData!=undefined) {
               loop1:
-              for(let data of finalData){
+              for(let data of outgoingData){
                 if(data.x==convertedDate){
                   data.y+=amount
                   break loop1;
                 }
-                else if(data==finalData[finalData.length-1]) {
-                  finalData.push({x:convertedDate,y:amount})
+                else if(data==outgoingData[outgoingData.length-1]) {
+                  outgoingData.push({x:convertedDate,y:amount})
                   break loop1;
                 }
               }
             }
           else {
-            finalData=[{x:convertedDate,y:amount}]
+            outgoingData=[{x:convertedDate,y:amount}]
           }
         }
       }   
-      this.lineChartData[0].data=finalData;
-      this.chart.update()
-    } else if(type==="received") {
-      let finalData; 
-      for(let t of transaction) {
+      
+      for(let t of received) {
         if(t.amount!=undefined && t.time!=undefined){
           let date= new Date(t.time*1000);
           let convertedDate = String(date.getFullYear()+"-"+Number(date.getMonth()+1)+"-"+date.getDate())
           let amount = t.amount/100000000
-          if(finalData!=undefined) {
+          if(receivedData!=undefined) {
               loop1:
-              for(let data of finalData){
+              for(let data of receivedData){
                 if(data.x==convertedDate){
                   data.y+=amount
                   break loop1;
                 }
-                else if(data==finalData[finalData.length-1]) {
-                  finalData.push({x:convertedDate,y:amount})
+                else if(data==receivedData[receivedData.length-1]) {
+                  receivedData.push({x:convertedDate,y:amount})
                   break loop1;
                 }
               }
             }
           else {
-            finalData=[{x:convertedDate,y:amount}]
+            receivedData=[{x:convertedDate,y:amount}]
           }
         }
       }   
-      this.lineChartData[1].data=finalData;
-      this.chart.update()
-    } else if(type==="outgoing") {
-      let finalData; 
-      for(let t of transaction) {
+   
+      for(let t of stakes) {
         if(t.amount!=undefined && t.time!=undefined){
           let date= new Date(t.time*1000);
           let convertedDate = String(date.getFullYear()+"-"+Number(date.getMonth()+1)+"-"+date.getDate())
           let amount = t.amount/100000000
-          if(finalData!=undefined) {
+          if(stakesData!=undefined) {
               loop1:
-              for(let data of finalData){
+              for(let data of stakesData){
                 if(data.x==convertedDate){
                   data.y+=amount
                   break loop1;
                 }
-                else if(data==finalData[finalData.length-1]) {
-                  finalData.push({x:convertedDate,y:amount})
+                else if(data==stakesData[stakesData.length-1]) {
+                  stakesData.push({x:convertedDate,y:amount})
                   break loop1;
                 }
               }
             }
           else {
-            finalData=[{x:convertedDate,y:amount}]
+            stakesData=[{x:convertedDate,y:amount}]
           }
         }
-      }   
-      this.lineChartData[2].data=finalData;
-      this.chart.update()
-     };
-    
-}
-public sumValuesUp() {
-  let date;
-  for(let stakes of this.lineChartData[0].data) { 
+      
+  }
   
-    console.log(stakes)   
-   if(date!=undefined) {
-     loop1:
-     for(let dates of date){
-       if(dates.x==stakes[1]){
-         dates.y+=stakes[0]
-         break loop1;
-       }
-       else if(dates==date[date.length-1]) {
-        date.push({x:stakes[1],y:stakes[0]})
-       }
-     }
-   }
-   else {
-     date=[{x:stakes[1],y:stakes[0]}]
-   }
+  this.lineChartData[2].data=outgoingData;     
+  this.lineChartData[1].data=receivedData;
+  this.lineChartData[0].data=stakesData;
+  this.chart.update()
+  this.fillMissingData(stakesData,outgoingData,receivedData)
+  
+  
+}
+
+
+public fillMissingData(stakesData,outgoingData,receivedData) {
+  let allData=[stakesData,receivedData,outgoingData];
+  let minDate;
+  let maxDate;
+  for(let k=0; k<allData.length; k++){
+    if(allData[k]!=undefined){
+      for(let i=0; i<allData[k].length; i++) {
+        if(minDate==undefined) {
+         minDate=moment(allData[k][i].x).format("x")
+         maxDate=moment(allData[k][i].x).format("x")
+        }
+        else {
+          if(moment(allData[k][i].x).format("x")<minDate){
+            minDate=moment(allData[k][i].x).format("x")
+          }
+          else if(moment(allData[k][i].x).format("x")>maxDate){
+            maxDate=moment(allData[k][i].x).format("x")
+          }
+        }     
+      }
+    }
+  }
+  for(let k=0; k<allData.length; k++){
+    let newData =[]
+    if(allData[k]!=undefined){    
+    let currentLenght = allData[k].length
+    for(let day=new Date(Number(minDate)); day<=new Date(); day.setDate(day.getDate() + 1)){
+    
+      loop1:
+      for(let i=0; i<currentLenght; i++) {
+        //console.log(moment(allData[k][i].x).format("x"),day)
+        if(moment(allData[k][i].x).format("x")==moment(day).format("x")) {
+          if(allData[k][i].y!=undefined) {
+           newData.push(allData[k][i])
+            break loop1;
+          }
+        }
+        else if(i==allData[k].length-1){
+          let date = new Date(day)
+          let convertedDate =String(date.getFullYear()+"-"+Number(date.getMonth()+1)+"-"+date.getDate())
+          newData.push({x:convertedDate,y:0})
+         
+          currentLenght = allData[k].length
+        }
+      }
+    }
+ 
+    this.lineChartData[k].data=newData;   
+  }
   }
  
-  //this.lineChartData[0].data=date;
   this.chart.update()
-}
+
 
 }
+}
+
 
 
   
