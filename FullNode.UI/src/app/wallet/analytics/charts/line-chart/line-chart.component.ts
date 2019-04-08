@@ -18,8 +18,9 @@ var moment = require('moment');
   styleUrls: ['./line-chart.component.css']
 })
 
+//ToDo: Get Full history, Create Balance Graph ( Copy array without reference!)
 export class LineChartComponent  implements OnInit {
-
+  public sync = [];
 
   public transactions: TransactionInfo[];
   public coinUnit: string;
@@ -140,7 +141,7 @@ export class LineChartComponent  implements OnInit {
               historyResponse = response.history[0].transactionsHistory;   
               this.getTransactionInfo(historyResponse);
             }
-          
+          console.log(this.sync)
            
           }
         },
@@ -183,16 +184,19 @@ export class LineChartComponent  implements OnInit {
 
       if (transaction.type === "send") {
         transactionType = "sent";
+        this.sync.push({type:transactionType,id:transactionId, amount:transactionAmount, time:transactionTimestamp})
         outgoing.push({id:transactionId, amount:transactionAmount, time:transactionTimestamp});
         balance-=transactionAmount;
         
       } else if (transaction.type === "received") {
         transactionType = "received";
+        this.sync.push({type:transactionType,id:transactionId, amount:transactionAmount, time:transactionTimestamp})
         received.push({id:transactionId, amount:transactionAmount, time:transactionTimestamp});
         balance+=transactionAmount;
         
       } else if (transaction.type === "staked") {
         transactionType = "staked";
+        this.sync.push({type:transactionType,id:transactionId, amount:transactionAmount, time:transactionTimestamp})
         stakes.push({id:transactionId, amount:transactionAmount, time:transactionTimestamp});
         balance+=transactionAmount;
         
@@ -217,11 +221,12 @@ export class LineChartComponent  implements OnInit {
   }
 
 
-  public addData( balance, outgoing, received, stakes){
+  private addData( balance, outgoing, received, stakes){
    
       let outgoingData;
       let receivedData;
       let stakesData;
+      let balanceData;
       for(let t of outgoing) {
         if(t.amount!=undefined && t.time!=undefined){
           let date= new Date(t.time*1000);
@@ -295,6 +300,7 @@ export class LineChartComponent  implements OnInit {
       
   }
   
+  
   this.lineChartData[2].data=outgoingData;     
   this.lineChartData[1].data=receivedData;
   this.lineChartData[0].data=stakesData;
@@ -305,10 +311,12 @@ export class LineChartComponent  implements OnInit {
 }
 
 
-public fillMissingData(stakesData,outgoingData,receivedData) {
+private fillMissingData(stakesData,outgoingData,receivedData) {
   let allData=[stakesData,receivedData,outgoingData];
   let minDate;
   let maxDate;
+
+  //Getting first and currentday
   for(let k=0; k<allData.length; k++){
     if(allData[k]!=undefined){
       for(let i=0; i<allData[k].length; i++) {
@@ -327,8 +335,10 @@ public fillMissingData(stakesData,outgoingData,receivedData) {
       }
     }
   }
-  for(let k=0; k<allData.length; k++){
-    let newData =[]
+
+  //Filling all missing values with 0   
+  let newData =[[],[],[]]
+  for(let k=0; k<allData.length; k++){    
     if(allData[k]!=undefined){    
     let currentLenght = allData[k].length
     for(let day=new Date(Number(minDate)); day<=new Date(); day.setDate(day.getDate() + 1)){
@@ -338,27 +348,70 @@ public fillMissingData(stakesData,outgoingData,receivedData) {
         //console.log(moment(allData[k][i].x).format("x"),day)
         if(moment(allData[k][i].x).format("x")==moment(day).format("x")) {
           if(allData[k][i].y!=undefined) {
-           newData.push(allData[k][i])
+           newData[k].push(allData[k][i])
             break loop1;
           }
         }
         else if(i==allData[k].length-1){
           let date = new Date(day)
           let convertedDate =String(date.getFullYear()+"-"+Number(date.getMonth()+1)+"-"+date.getDate())
-          newData.push({x:convertedDate,y:0})
+          newData[k].push({x:convertedDate,y:0})
          
           currentLenght = allData[k].length
         }
       }
     }
  
-    this.lineChartData[k].data=newData;   
+    this.lineChartData[k].data=newData[k];   
   }
   }
- 
+  
   this.chart.update()
+  //this.addBalanceGraph(newData)
+  
 
 
+}
+
+//Not working yet
+  private addBalanceGraph(newData) {
+    let balance = [];
+    var hasData =false;
+    for(let datasets of newData) {
+      if(datasets.length!=0 && !hasData){
+        balance=datasets
+        hasData=true;
+      }
+      else if(datasets.length!=0) {
+        for(let k=0; k<balance.length; k++){
+          balance[k].y+=datasets[k].y
+        }
+      }
+    
+    }
+    this.lineChartData[3].data=balance;
+    console.log(balance)
+    this.chart.update()
+    /*let data:any= Array.from(newData);
+    console.log(data)
+    //Creating balance chart
+    let balance = [];
+    var hasData =false;
+
+    for(let i=0; i<data.length; i++) {    
+      if(data[i].length!=0 && !hasData) {
+        balance=data[i];
+        hasData=true;
+      }
+      else if(data[i].length!=0) {
+        for(let k=0; k<balance.length; k++){
+          balance[k].y+=data[i][k].y
+        }
+      }
+    }
+    this.lineChartData[3].data=balance;
+    console.log(balance)
+    this.chart.update()*/
 }
 }
 
