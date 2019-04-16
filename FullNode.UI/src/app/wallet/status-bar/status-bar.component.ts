@@ -77,6 +77,7 @@ export class StatusBarComponent implements OnInit, OnDestroy {
         error => {
           if (error.status === 0) {
             this.cancelSubscriptions();
+            this.startSubscriptions();
           } else if (error.status >= 400) {
             if (!error.error.errors[0].message) {
               this.cancelSubscriptions();
@@ -97,6 +98,7 @@ export class StatusBarComponent implements OnInit, OnDestroy {
         }, error => {
           if (error.status === 0) {
             this.cancelSubscriptions();
+            this.startSubscriptions();
           } else if (error.status >= 400) {
             if (!error.error.errors[0].message) {
               this.cancelSubscriptions();
