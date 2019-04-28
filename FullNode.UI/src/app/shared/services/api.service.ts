@@ -222,6 +222,20 @@ export class ApiService {
       catchError(err => this.handleHttpError(err))
     )
   }
+  /**
+   * Get a wallets full transaction history info from the API.
+   */
+  getFullWalletHistory(data: WalletInfo): Observable<any> {
+    let params = new HttpParams()
+      .set('walletName', data.walletName)
+      .set('accountName', "account 0")
+    return this.pollingInterval.pipe(
+      timeout(10000),
+      startWith(0),
+      switchMap(() => this.http.get(this.stratisApiUrl + '/wallet/fullhistory', { params: params })),
+      catchError(err => this.handleHttpError(err))
+    )
+  }
 
   /**
    * Get an unused receive address for a certain wallet from the API.
@@ -442,6 +456,24 @@ export class ApiService {
     return this.http.get(this.stratisApiUrl + '/smartcontracts/receipt', { params }).pipe(
       catchError(err => this.handleHttpError(err))
     );
+  }
+
+  getCurrentStexPriceUSD():Observable<any> {
+   
+    return this.pollingInterval.pipe(
+      timeout(10000),
+      startWith(0),
+      switchMap(() => this.http.get('https://api.coingecko.com/api/v3/simple/price?ids=x42-protocol&vs_currencies=usd')),
+      catchError(err => this.handleHttpError(err))
+    )
+  }
+  getCurrentStexPriceBTC():Observable<any> {
+    return this.pollingInterval.pipe(
+      timeout(10000),
+      startWith(0),
+      switchMap(() => this.http.get('https://api.coingecko.com/api/v3/simple/price?ids=x42-protocol&vs_currencies=btc')),
+      catchError(err => this.handleHttpError(err))
+    )
   }
 
   private handleHttpError(error: HttpErrorResponse, silent?: boolean) {

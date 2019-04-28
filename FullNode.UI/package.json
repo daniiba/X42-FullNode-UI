@@ -56,12 +56,15 @@
   },
   "dependencies": {
     "chart.js": "^2.8.0",
+    "chartjs-plugin-zoom": "^0.7.0",
     "electron-context-menu": "0.11.0",
+    "hammerjs": "^2.0.8",
     "ng2-charts": "^2.2.2",
     "ngx-pagination": "3.2.1",
     "ngx-qrcode2": "0.1.0",
     "primeicons": "^1.0.0",
-    "primeng": "^7.1.0"
+    "primeng": "^7.1.0",
+    "stocks-exchange-client": "^2.1.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^0.13.8",

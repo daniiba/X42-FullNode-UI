@@ -12,8 +12,17 @@ import { Subscription, from } from 'rxjs';
 import { TransactionDetailsComponent } from '../../../transaction-details/transaction-details.component';
 import { Color, BaseChartDirective, Label } from 'ng2-charts';
 import { fillProperties } from '@angular/core/src/util/property';
+import { weekOfYear } from 'ngx-bootstrap/chronos/units/week-calendar-utils';
+
+
 var moment = require('moment');
-var fs = require("fs");
+
+/* https://api3.stex.com/public/currencies/621 
+    https://api3.stex.com/public/ticker/873   General info of Tradingpair
+
+*/
+
+
 @Component({
   selector: 'app-line-chart',
   templateUrl: './line-chart.component.html',
@@ -30,11 +39,10 @@ export class LineChartComponent  implements OnInit {
   public pageNumber: number = 1;
   private errorMessage: string;
   private walletHistorySubscription: Subscription;
-  private isChainSynced: boolean;
+  private StexPriceUSDSubscription: Subscription;
+  private StexPriceBTCSubscription: Subscription;
   public data: any;
   public options: any;
-  private isUpdated : boolean;
-  private nodeStatusSubscription: Subscription;
   public clientName: string;
   public applicationVersion: string;
   public fullNodeVersion: string;
@@ -42,10 +50,10 @@ export class LineChartComponent  implements OnInit {
   public protocolVersion: number;
   public blockHeight: number;
   public dataDirectory: string;
-  private lastBlockSyncedHeight: number;
-  private chainTip: number;
   public isSyncing: Boolean = true;
-  private fullHistory :any[];
+  public fullData: any;
+  public StexInfoUSD: any;
+  public StexInfoBTC: any;
   public lineChartData: ChartDataSets[] = [
   
       {
@@ -82,7 +90,7 @@ export class LineChartComponent  implements OnInit {
   ];
   public lineChartType = 'line';
   public lineChartLabels: Label[] = [];
-  public lineChartOptions: (ChartOptions ) = {
+  public lineChartOptions: (any ) = {
     
     responsive: true,
     legend: {
@@ -111,19 +119,22 @@ export class LineChartComponent  implements OnInit {
         unit: 'day'
     },
     
-    }]
+    }],
+    
   }
+
   };
   @ViewChild(BaseChartDirective) chart: BaseChartDirective;
   constructor(private apiService: ApiService, private globalService: GlobalService, private modalService: NgbModal, private genericModalService: ModalService, private router: Router) {
-    this.isUpdated=false;
+  
   }
 
   ngOnInit() {
-    this.walletName = this.globalService.getWalletName();
-    this.startSubscriptions();
+    this.walletName = this.globalService.getWalletName();   
     this.coinUnit = this.globalService.getCoinUnit();
- 
+    this.StexInfoUSD = this.apiService.getCurrentStexPriceUSD();
+    this.StexInfoBTC= this.apiService.getCurrentStexPriceBTC();
+    this.startSubscriptions();
   }
 
   ngOnDestroy() {
@@ -133,33 +144,6 @@ export class LineChartComponent  implements OnInit {
   onDashboardClicked() {
     this.router.navigate(['/wallet']);
   }
-  private getGeneralWalletInfo() {
-    let walletInfo = new WalletInfo(this.walletName);
-    this.generalWalletInfoSubscription = this.apiService.getGeneralInfo(walletInfo)
-      .subscribe(
-        response => {
-          let generalWalletInfoResponse = response;
-          this.lastBlockSyncedHeight = generalWalletInfoResponse.lastBlockSyncedHeight;
-          this.chainTip = generalWalletInfoResponse.chainTip;
-          this.isChainSynced = generalWalletInfoResponse.isChainSynced;
-
-          if (this.isChainSynced && this.lastBlockSyncedHeight == this.chainTip) {
-            this.isSyncing = false;
-          } else {
-            this.isSyncing = true;
-          }
-        },
-        error => {
-          this.cancelSubscriptions();
-        }
-      )
-      ;
-  };
-
-  private openTransactionDetailDialog(transaction: any) {
-    const modalRef = this.modalService.open(TransactionDetailsComponent, { backdrop: "static" });
-    modalRef.componentInstance.transaction = transaction;
-  }
 
     // todo: add history in seperate service to make it reusable
   private getHistory() {
@@ -168,84 +152,20 @@ export class LineChartComponent  implements OnInit {
    
    // var savedTransactions = JSON.parse(fs.readFileSync("transactionsTest.json"));
 
-    this.walletHistorySubscription = this.apiService.getWalletHistory(walletInfo)
+    this.walletHistorySubscription = this.apiService.getFullWalletHistory(walletInfo)
       .subscribe(
         response => {
-        
-          //Create full transactionhistory
-          if(this.isChainSynced&&this.dataDirectory&&!this.isUpdated) {           
-            this.isUpdated=true;
-           fs.readFile(this.dataDirectory+'/transactionsTest.json','utf8',function (err, data) {
-            if (err) throw err;
-            if(data) {
-              let result =[];
-              let alreadyAdded = [];
-              console.log(JSON.parse(data), JSON.parse(data).length)
-             
-              //Removing duplicates
-              for(let i=0; i < data.length; i++){
-                if(!alreadyAdded){
-                  this.fullHistory.push(data[i])
-                  alreadyAdded.push(data[i].id)
-                  console.log(this.fullHistory,alreadyAdded)
-                }
-                else {
-                  loop1:
-                  for(let k=0; k < alreadyAdded.length; k++){
-                    if(alreadyAdded[k].id===data[i].id) {
-                      break loop1;
-                    }
-                    else if(k==alreadyAdded.length-1) {
-                     
-                      this.fullHistory.push(data[i])
-                      alreadyAdded.push(data[i].id)
-                      console.log(this.fullHistory,alreadyAdded)
-                      break loop1;
-                    }
-                  } 
-                }
-                              
-              }
-             console.log(alreadyAdded)
-            }
-            else {
-              console.log("No transaction file existing.")
-            }
-            
-          });
-          }
-          
             if(historyResponse!=undefined) {
               if(historyResponse[0].id!=response.history[0].transactionsHistory[0].id &&historyResponse[0].type!=response.history[0].transactionsHistory[0].type) {
                 historyResponse = response.history[0].transactionsHistory;
-                fs.writeFile(this.dataDirectory+'/transactionsTest.json', response.history[0].transactionsHistory,  {'flag':'a'},  function(err) {
-                  if (err) {
-                      return console.error(err);
-                  }
-                  else {
-                    console.log("success")
-                  }
-              });
-               
                 this.getTransactionInfo(historyResponse);
-                console.log(historyResponse)
+               
              
               }
             } else {
               historyResponse = response.history[0].transactionsHistory;
-              
-               
-                fs.writeFile(this.dataDirectory+'/transactionsTest.json', response.history[0].transactionsHistory,  {'flag':'a'},  function(err) {
-                  if (err) {
-                      return console.error(err);
-                  }
-                  else {
-                    console.log("success")
-                  }
-              });
-              
               this.getTransactionInfo(historyResponse);
-              console.log(historyResponse)
+              
             
           }
           //TO DO - add account feature instead of using first entry in array
@@ -255,15 +175,11 @@ export class LineChartComponent  implements OnInit {
               if(historyResponse[0].id!=response.history[0].transactionsHistory[0].id &&historyResponse[0].type!=response.history[0].transactionsHistory[0].type) {
                 historyResponse = response.history[0].transactionsHistory;   
                 this.getTransactionInfo(historyResponse);
-                console.log(historyResponse)
               }
             } else {
               historyResponse = response.history[0].transactionsHistory;   
               this.getTransactionInfo(historyResponse);
-              console.log(historyResponse)
             }
-         // console.log(this.sync)
-           
           }
         },
         error => {
@@ -326,39 +242,27 @@ export class LineChartComponent  implements OnInit {
     }
       console.log(outgoing, received, stakes)
       this.addData(balance, outgoing, received, stakes)
-     
-    
    
   }
 
   private cancelSubscriptions() {
-    if(this.walletHistorySubscription) {
-      this.walletHistorySubscription.unsubscribe();
-    }
-    if(this.nodeStatusSubscription) {
-      this.nodeStatusSubscription.unsubscribe();
-    }
+    
   };
 
   private startSubscriptions() {
-    this.getGeneralWalletInfo();
-    this.nodeStatusSubscription = this.apiService.getNodeStatusInterval()
-    .subscribe(
-      (data: NodeStatus) =>  {
-        let statusResponse = data
-        this.clientName = statusResponse.agent;
-        this.fullNodeVersion = statusResponse.version;
-        this.network = statusResponse.network;
-        this.protocolVersion = statusResponse.protocolVersion;
-        this.blockHeight = statusResponse.blockStoreHeight;
-        this.dataDirectory = statusResponse.dataDirectoryPath;
-       
-      }
-    );
     this.getHistory();
-    
+    this.getCurrentPrice();
   }
+  
+  private getCurrentPrice(){
+   this.StexPriceUSDSubscription= this.apiService.getCurrentStexPriceUSD()
+    .subscribe(
+      response => {console.log(response)})
 
+   this.StexPriceBTCSubscription= this.apiService.getCurrentStexPriceBTC()
+    .subscribe(
+      response => {console.log(response)})
+  }
 
   private addData( balance, outgoing, received, stakes){
    
@@ -443,9 +347,10 @@ export class LineChartComponent  implements OnInit {
   this.lineChartData[2].data=outgoingData;     
   this.lineChartData[1].data=receivedData;
   this.lineChartData[0].data=stakesData;
+  this.fullData=[[outgoingData],[receivedData],[stakesData]]
   this.chart.update()
   this.fillMissingData(stakesData,outgoingData,receivedData)
-  
+ 
   
 }
 
@@ -500,17 +405,52 @@ private fillMissingData(stakesData,outgoingData,receivedData) {
         }
       }
     }
- 
+   
     this.lineChartData[k].data=newData[k];   
   }
   }
   
+  this.scaleSize(newData, "full")
   this.chart.update()
   //this.addBalanceGraph(newData)
-  
-
 
 }
+private calc
+private scaleSize(data, scale) {
+  let size=7;
+  if(scale=="week") {
+
+  }
+  else if(scale=="month") {
+    size=31;
+  }
+  else if(scale=="year") {
+    size=364;
+  }
+  else if(scale=="full") {
+    size=9999999;
+  }
+  for(let d=0; d<data.length; d++) {
+    let newData=[]
+    loop1:
+    if(data[d].length>=size) {
+    for(let i=0; i<data[d].length; i++){
+      if(i!=size){
+        newData.push(data[d][data[d].length-i-1])
+      }
+      else {
+        this.lineChartData[d].data=newData.reverse();   
+        break loop1;
+      }
+    }
+  }
+  else {
+    this.lineChartData[d].data=data[d]; 
+  }
+  }
+  this.chart.update()
+}
+
 
 //Not working yet
   private addBalanceGraph(newData) {
