@@ -223,7 +223,6 @@ export class ApiService {
       .set('walletName', data.walletName)
       .set('accountName', "account 0")
     return this.pollingInterval.pipe(
-      timeout(10000),
       startWith(0),
       switchMap(() => this.http.get(this.stratisApiUrl + '/wallet/fullhistory', { params: params })),
       catchError(err => this.handleHttpError(err))
