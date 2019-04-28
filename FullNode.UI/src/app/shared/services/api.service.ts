@@ -451,7 +451,6 @@ export class ApiService {
   getCurrentStexPriceUSD():Observable<any> {
    
     return this.pollingInterval.pipe(
-      timeout(10000),
       startWith(0),
       switchMap(() => this.http.get('https://api.coingecko.com/api/v3/simple/price?ids=x42-protocol&vs_currencies=usd')),
       catchError(err => this.handleHttpError(err))
@@ -459,7 +458,6 @@ export class ApiService {
   }
   getCurrentStexPriceBTC():Observable<any> {
     return this.pollingInterval.pipe(
-      timeout(10000),
       startWith(0),
       switchMap(() => this.http.get('https://api.coingecko.com/api/v3/simple/price?ids=x42-protocol&vs_currencies=btc')),
       catchError(err => this.handleHttpError(err))
