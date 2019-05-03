@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-doughnut-chart',
-  templateUrl: './doughnut-chart.component.html',
-  styleUrls: ['./doughnut-chart.component.css']
+  selector: 'app-portfolio',
+  templateUrl: './portfolio.component.html',
+  styleUrls: ['./portfolio.component.css']
 })
-export class DoughnutChartComponent implements OnInit {
+export class PortfolioComponent implements OnInit {
 
   public doughnutChartLabels = ['x42', 'BTC', 'ETC', 'Bitconnect'];
   public doughnutChartType = 'doughnut';

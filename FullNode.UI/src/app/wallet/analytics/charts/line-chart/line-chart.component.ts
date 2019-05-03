@@ -152,18 +152,20 @@ export class LineChartComponent  implements OnInit {
    
    // var savedTransactions = JSON.parse(fs.readFileSync("transactionsTest.json"));
 
-    this.walletHistorySubscription = this.apiService.getFullWalletHistory(walletInfo)
+    this.walletHistorySubscription = this.apiService.getFullWalletHistory(walletInfo, 1)
       .subscribe(
         response => {
             if(historyResponse!=undefined) {
               if(historyResponse[0].id!=response.history[0].transactionsHistory[0].id &&historyResponse[0].type!=response.history[0].transactionsHistory[0].type) {
                 historyResponse = response.history[0].transactionsHistory;
+                console.log(historyResponse)
                 this.getTransactionInfo(historyResponse);
                
              
               }
             } else {
               historyResponse = response.history[0].transactionsHistory;
+              console.log(historyResponse)
               this.getTransactionInfo(historyResponse);
               
             

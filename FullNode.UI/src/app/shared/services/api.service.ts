@@ -218,10 +218,10 @@ export class ApiService {
   /**
    * Get a wallets full transaction history info from the API.
    */
-  getFullWalletHistory(data: WalletInfo): Observable<any> {
+  getFullWalletHistory(data: WalletInfo, page: any): Observable<any> {
     let params = new HttpParams()
       .set('walletName', data.walletName)
-      .set('accountName', "account 0")
+      .set('accountName', "account 0").set('Page', page)
     return this.pollingInterval.pipe(
       startWith(0),
       switchMap(() => this.http.get(this.stratisApiUrl + '/wallet/fullhistory', { params: params })),

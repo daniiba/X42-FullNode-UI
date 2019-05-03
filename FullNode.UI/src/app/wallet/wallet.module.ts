@@ -25,8 +25,8 @@ import { BsDatepickerModule } from 'ngx-bootstrap';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { ChartsModule } from 'ng2-charts';
 import { LineChartComponent } from './analytics/charts/line-chart/line-chart.component';
-import { DoughnutChartComponent } from './analytics/charts/doughnut-chart/doughnut-chart.component';
-import { RadarChartComponent } from './analytics/charts/radar-chart/radar-chart.component';
+import { PortfolioComponent } from './analytics/charts/portfolio/portfolio.component';
+import { PricesComponent } from './analytics/charts/prices/prices.component';
 import { PieChartComponent } from './analytics/charts/pie-chart/pie-chart.component';
 import {ChartModule} from 'primeng/chart';
 
@@ -60,8 +60,8 @@ import {ChartModule} from 'primeng/chart';
     ResyncComponent,
     AnalyticsComponent,
     LineChartComponent,
-    DoughnutChartComponent,
-    RadarChartComponent,
+    PortfolioComponent,
+    PricesComponent,
     PieChartComponent
   ],
   entryComponents: [

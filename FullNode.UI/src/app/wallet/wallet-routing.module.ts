@@ -13,8 +13,8 @@ import { AboutComponent } from './advanced/components/about/about.component';
 import { GenerateAddressesComponent } from './advanced/components/generate-addresses/generate-addresses.component';
 import { ResyncComponent } from './advanced/components/resync/resync.component';
 import { LineChartComponent } from './analytics/charts/line-chart/line-chart.component';
-import { DoughnutChartComponent } from './analytics/charts/doughnut-chart/doughnut-chart.component';
-import { RadarChartComponent } from './analytics/charts/radar-chart/radar-chart.component';
+import { PortfolioComponent } from './analytics/charts/portfolio/portfolio.component';
+import { PricesComponent } from './analytics/charts/prices/prices.component';
 import { PieChartComponent } from './analytics/charts/pie-chart/pie-chart.component';
 
 const routes: Routes = [
@@ -26,8 +26,8 @@ const routes: Routes = [
       children: [
         { path: '', redirectTo: 'bar-chart', pathMatch: 'full'},
         { path: 'bar-chart', component: LineChartComponent},
-        { path: 'doughnut-chart', component: DoughnutChartComponent},
-        { path: 'radar-chart', component: RadarChartComponent},
+        { path: 'portfolio', component: PortfolioComponent},
+        { path: 'prices', component: PricesComponent},
         { path: 'pie-chart', component: PieChartComponent},
       ]
     },
